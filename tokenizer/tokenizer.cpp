@@ -356,7 +356,7 @@ namespace miniplc0 {
 
 					return std::make_pair(std::make_optional<Token>(TokenType::EQUAL_SIGN, ss.str(), pos, previousPos()), std::optional<CompilationError>());
 				}
-				auto ch = current_char.has_value();
+				auto ch = current_char.value();
 				if (ch == '=')
 				{
 					return std::make_pair(std::make_optional<Token>(TokenType::EQUAL, ss.str(), pos, previousPos()), std::optional<CompilationError>());
@@ -376,7 +376,7 @@ namespace miniplc0 {
 
 					return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidInput));
 				}
-				auto ch = current_char.has_value();
+				auto ch = current_char.value();
 				if (ch == '=')
 				{
 					return std::make_pair(std::make_optional<Token>(TokenType::NOEUQAL, ss.str(), pos, previousPos()), std::optional<CompilationError>());
@@ -547,7 +547,7 @@ namespace miniplc0 {
 
 					return std::make_pair(std::make_optional<Token>(TokenType::MORE, ss.str(), pos, previousPos()), std::optional<CompilationError>());
 				}
-				auto ch = current_char.has_value();
+				auto ch = current_char.value();
 				if (ch == '=')
 				{
 					return std::make_pair(std::make_optional<Token>(TokenType::MOREEQUAL, ss.str(), pos, previousPos()), std::optional<CompilationError>());
@@ -567,7 +567,7 @@ namespace miniplc0 {
 
 					return std::make_pair(std::make_optional<Token>(TokenType::LESS, ss.str(), pos, previousPos()), std::optional<CompilationError>());
 				}
-				auto ch = current_char.has_value();
+				auto ch = current_char.value();
 				if (ch == '=')
 				{
 					return std::make_pair(std::make_optional<Token>(TokenType::LESSEQUAL, ss.str(), pos, previousPos()), std::optional<CompilationError>());

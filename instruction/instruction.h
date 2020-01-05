@@ -99,7 +99,7 @@ namespace miniplc0 {
 		Constants(int32_t type, std::string value) : _type_code(type), _value(value) {}
 
 		Constants() : Constants(0, 0) {}
-		Constants(const Constants& i) { _type_code=i._type_code, _value=i._value; }
+		
 		int32_t gettype() const { return _type_code; }
 		std::string getvalue() const { return _value; }
 
@@ -138,11 +138,11 @@ namespace miniplc0 {
 		int32_t _type;//char0 int 1 double2 void 3 const char4 const int 5
 		//int32_t _isconst; //0 no 1 yes
 	
-		int32_t _offset=0;
+		int32_t _offset;
 	public:
 		Variable(std::int32_t type, int32_t offset) : _type(type),_offset(offset) {}
 		Variable() :_type(0), _offset(0) {}
-		Variable(std::int32_t offset) :Variable(1, offset) {}
+		//Variable(std::int32_t offset) :Variable(1, offset) {}
 		int32_t getoffset() const { return _offset; }
 		
 

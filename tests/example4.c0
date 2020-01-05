@@ -1,8 +1,10 @@
 int main() {
-int i=1;
-const int  j=2;
-int c;
-print(c);
-print(j);
+int i,j;
+scan(i);
+scan(j);
+while(i<20)
+print(i);
+while(j<5)
+print(i,j);
     return 0;
 }

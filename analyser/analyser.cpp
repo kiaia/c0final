@@ -488,8 +488,7 @@ namespace miniplc0 {
 			auto name = nextToken();
 			if (!name.has_value() || name.value().GetType() != TokenType::IDENTIFIER)
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
-			if (name.value().GetValueString() == "main" && type != 3)
-				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoFunciton);
+			
 
 			if (isDeclaredFun(name.value().GetValueString()) >= 0)
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
@@ -812,11 +811,13 @@ namespace miniplc0 {
 			_instructions_list[_functions_list.size() - 1][ifoffset].backfille(elseoff + 1);
 			return {};
 		}
-		auto elseoff = _instructions_list[_functions_list.size() - 1].size() - 1;
-		_instructions_list[_functions_list.size() - 1][ifoffset].backfille(elseoff + 1); //tbc
-		s = analyseStatement();
-		if (s.has_value())
-			return s;
+		else {
+			auto elseoff = _instructions_list[_functions_list.size() - 1].size() - 1;
+			_instructions_list[_functions_list.size() - 1][ifoffset].backfille(elseoff + 1); //tbc
+			s = analyseStatement();
+			if (s.has_value())
+				return s;
+		}
 		return {};
 
 
@@ -860,10 +861,12 @@ namespace miniplc0 {
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
 				break;
 			}
+			
 			return {};
 
 
 		}
+		_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::JE));
 		unreadToken();
 		return {};
 	}
@@ -905,12 +908,10 @@ namespace miniplc0 {
 		{
 			switch (type) {
 			case 1:
-				_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::IPUSH, 0));
-				_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::IRET));
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrVoid);
 				break;
 			case 0:
-				_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::IPUSH, 0));
-				_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::IRET));
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrVoid);
 				break;
 			case 3:_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::RET));
 				break;
@@ -1006,6 +1007,11 @@ namespace miniplc0 {
 
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
 		else {
+			next = nextToken();
+			if (next.value().GetType() != TokenType::LEFT_BRACKET)
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedLeftBracket);
+			
+
 			for (int i = 0; i < parasize; i++) {
 				auto err = analyseExpression();
 				if (err.has_value())
@@ -1023,7 +1029,9 @@ namespace miniplc0 {
 
 				}
 			}
-
+			next = nextToken();
+			if (next.value().GetType() != TokenType::RIGHT_BRACKET)
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedRightBracket);
 		}
 
 		_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::CALL, isDeclaredFun(name));
@@ -1209,6 +1217,9 @@ namespace miniplc0 {
 					unreadToken();
 					break;
 				}
+				_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::BIPUSH, 32);
+				_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::CPRINT);
+
 				auto err = analysePrintable();
 				if (err.has_value())
 					return err;
@@ -1224,6 +1235,9 @@ namespace miniplc0 {
 		next = nextToken();
 		if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
+		_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::IPUSH, '\n');
+		_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::CPRINT);
+
 
 		// 生成相应的指令 WRT
 		//ins
@@ -1487,7 +1501,7 @@ namespace miniplc0 {
 		return  isVariable(s) || isConstant(s);
 	}
 	bool Analyser::isDeclaredGlobal(const std::string& s) {
-		return  isGlobalVariable(s) || isGlobalVariable(s);
+		return  isGlobalVariable(s) || isConstantGlobal(s);
 	}
 
 	bool Analyser::isVariable(const std::string& s) {

@@ -1,17 +1,10 @@
-void main() {
-int i=1;
-int j=1;
-scan(i);
-if(i>1)
-   print("t\x34\n\'st\n");
-else
-print("no\n");
-while(j<5)
-{
-print(j);
-j=j+1;
-print(j);
-print(j);
+int a1=1;
+const int a2=3;
+int fun(int a,int b){
+return a+b;
 }
+int main() {
+ fun(a1,a2);
+return 0;
 
  }
