@@ -28,9 +28,11 @@ namespace miniplc0 {
 		Analyser(Analyser&&) = delete;
 		Analyser(const Analyser&) = delete;
 		Analyser& operator=(Analyser) = delete;
+		int32_t get0x(miniplc0::Operation& p);
+		int32_t getparasize(miniplc0::Operation& p);
 
 		// 唯一接口
-		std::pair<std::vector<Instruction>, std::optional<CompilationError>> Analyse();
+		std::pair<std::vector<Instruction>, std::optional<CompilationError>> Analyse(std::ostream& output);
 	private:
 		// 所有的递归子程序
 
@@ -46,9 +48,9 @@ namespace miniplc0 {
 		std::optional<CompilationError> ConstInitDeclarator(int32_t type);
 		std::optional<CompilationError> VarInitDeclarator(int32_t type);
 		std::optional<CompilationError> analyseFunctionDefinition();
-		std::optional<CompilationError> analyseParameterClause(int32_t& para, std::vector<int32_t>& paratype);
+		std::optional<CompilationError> analyseParameterClause(int32_t& para, std::vector<int32_t>& paratype, std::vector<std::string>& paraname);
 		std::optional<CompilationError> analyseComponetSequence();
-		std::optional<CompilationError> analyseParameterDeaclartion(std::vector<int32_t>& paratype);
+		std::optional<CompilationError> analyseParameterDeaclartion(std::vector<int32_t>& paratype, std::vector<std::string>& paraname);
 		
 
 		std::optional<CompilationError>  analyseStatementSeq();
@@ -75,6 +77,7 @@ namespace miniplc0 {
 		std::optional<CompilationError> analyseItem();
 		// <因子>
 		std::optional<CompilationError> analyseFactor();
+		
 
 		// Token 缓冲区相关操作
 		int32_t funtionnum = 0;
@@ -108,7 +111,7 @@ namespace miniplc0 {
 		
 		// 获得 {变量，常量} 在栈上的偏移
 		Variable getIndex(const std::string&);
-	private:
+	public:
 		std::vector<Token> _tokens;
 		std::size_t _offset;
 		std::vector<Instruction> _start;//start
@@ -116,6 +119,7 @@ namespace miniplc0 {
 		std::vector<Function> _functions_list; //函数表、
 		std::pair<uint64_t, uint64_t> _current_pos;
 		std::vector<std::vector<Instruction>> _instructions_list; //函数指令段
+		
 		
 		
 

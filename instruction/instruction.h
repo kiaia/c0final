@@ -7,6 +7,8 @@
 namespace miniplc0 {
 
 	enum Operation {
+		CPRINT,
+		CSCAN,
 		IRET,
 		JE,
 		JNE,
@@ -59,15 +61,16 @@ namespace miniplc0 {
 		Instruction(Operation opr, int32_t x,int32_t y) : _opr(opr), _x(x), _y(y) {}
 
 		//Instruction() : Instruction(Operation::ILL, 0){}
-		Instruction(const Instruction& i) { _opr = i._opr; _x = i._x; }
+	//	Instruction(const Instruction& i) { _opr = i._opr; _x = i._x; }
 		//Instruction(Instruction&& i) :Instruction() { swap(*this, i); }
-		Instruction& operator=(Instruction i) { swap(*this, i); return *this; }
-		bool operator==(const Instruction& i) const { return _opr == i._opr && _x == i._x; }
+		/*Instruction& operator=(Instruction i) { swap(*this, i); return *this; }
+		bool operator==(const Instruction& i) const { return _opr == i._opr && _x == i._x; }*/
 		void backfille(int32_t offset) {
 			_x = offset;
 		}
 		Operation GetOperation() const { return _opr; }
 		int32_t GetX() const { return _x; }
+		int32_t GetY() const { return _y; }
 	private:
 		Operation _opr;
 		int32_t _x;
@@ -91,12 +94,15 @@ namespace miniplc0 {
     // INT = 1,
     // DOUBLE = 2
 
-		std::int32_t _value;
+		std::string _value;
 	public:
-		Constants(int32_t type, int32_t value) : _type_code(type), _value(value) {}
+		Constants(int32_t type, std::string value) : _type_code(type), _value(value) {}
 
 		Constants() : Constants(0, 0) {}
 		Constants(const Constants& i) { _type_code=i._type_code, _value=i._value; }
+		int32_t gettype() const { return _type_code; }
+		std::string getvalue() const { return _value; }
+
 
 	};
 	class Function final
@@ -110,12 +116,14 @@ namespace miniplc0 {
 		int32_t _name_index;  //type char0 int 1  double 2 void 3 const char4 const int 5
 		int32_t _params_size;//canshu 
 		std::vector<int32_t> _para_type;
+		std::vector<std::string> _para_name;
 	public:
-		Function(std::string name, int32_t type, int32_t params, std::vector<int32_t> paratype) :_name(name), _name_index(type), _params_size(params),_para_type(paratype) {}
-		int32_t gettype() { return _name_index; }
-		std::string getname() { return _name; }
-		int32_t getparasize() { return _params_size; }
+		Function(std::string name, int32_t type, int32_t params, std::vector<int32_t> paratype, std::vector<std::string> paraname) :_name(name), _name_index(type), _params_size(params),_para_type(paratype),_para_name(paraname) {}
+		int32_t gettype() const{ return _name_index; }
+		std::string getname()const { return _name; }
+		int32_t getparasize() const{ return _params_size; }
 		int32_t getparatype(int32_t num) { return _para_type[num]; }
+		std::string getparaname(int32_t num) { return _para_name[num]; }
 
 		
 
@@ -130,11 +138,12 @@ namespace miniplc0 {
 		int32_t _type;//char0 int 1 double2 void 3 const char4 const int 5
 		//int32_t _isconst; //0 no 1 yes
 	
-		int32_t _offset;
+		int32_t _offset=0;
 	public:
 		Variable(std::int32_t type, int32_t offset) : _type(type),_offset(offset) {}
-
+		Variable() :_type(0), _offset(0) {}
 		Variable(std::int32_t offset) :Variable(1, offset) {}
+		int32_t getoffset() const { return _offset; }
 		
 
 	};

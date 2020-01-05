@@ -1,12 +1,10 @@
 int g0 = 42;
-int g1 = 0x42;
+int g1 = 1;
 
 int fun(int num) {
     return -num;
 }
 
 int main() {
-print(g1);
-print("bbb");
     return fun(-123456);
 }
