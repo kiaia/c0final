@@ -4,5 +4,5 @@ const int  j=2;
 int c;
 print(c);
 print(j);
-    return fun(-123456);
+    return 0;
 }
