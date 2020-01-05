@@ -1,0 +1,10 @@
+int main() {
+int
+     int t = 3452345;
+     int s=(char)t;
+char r=t;
+   
+     print(t);
+print(s);
+print(r);
+ }
