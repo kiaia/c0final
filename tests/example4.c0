@@ -1,6 +1,6 @@
 int main() {
 int i=1;
-const j=2;
+const int  j=2;
 int c;
 print(c);
 print(j);
