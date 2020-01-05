@@ -158,6 +158,13 @@ void AnalyseC(std::istream& input, std::ostream& output) {
 		}
 		else if (analyser.getparasize(op) == 2)
 		{
+			if (op == miniplc0::LOADC)
+			{
+				int32_t temp = opx + funsize;
+				trans(&(temp), 2, output);
+
+			}
+			else
 			trans(&(opx), 2, output);
 
 		}
