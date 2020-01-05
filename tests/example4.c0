@@ -3,8 +3,10 @@ int i,j;
 scan(i);
 scan(j);
 while(i<20)
-print(i);
+{print(i);
+i=i+1;}
 while(j<5)
-print(i,j);
+{print(i,j);
+j=j+1;}
     return 0;
 }

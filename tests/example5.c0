@@ -1,5 +1,4 @@
 int main() {
-int
      int t = 3452345;
      int s=(char)t;
 char r=t;
