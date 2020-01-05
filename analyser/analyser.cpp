@@ -284,27 +284,64 @@ namespace miniplc0 {
 		auto name = nextToken();
 		if (!name.has_value() || name.value().GetType() != TokenType::IDENTIFIER)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
-		if (isDeclared(name.value().GetValueString()))
-			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
 
-
-
-		// '='
 		auto next = nextToken();
-		if (!next.has_value() || next.value().GetType() != TokenType::EQUAL_SIGN)
-			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
+		if (_vars_list.empty() == false) {
+			if (isDeclared(name.value().GetValueString()))
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
+			if (next.value().GetType() != TokenType::EQUAL_SIGN)
+			{
+				addVariable(name.value(), type);
+				_instructions_list[_instructions_list.size() - 1].emplace_back(Instruction(Operation::IPUSH, 0)); //ins
+				unreadToken();
+				return {};
+			}
+			// '='
+			else
+			{
+
+
+				int32_t val;
+				auto err = analyseExpression();
+				if (err.has_value())
+					return err;
+				addVariable(name.value(), type);
+				//_start.emplace_back(Instruction(Operation::IPUSH, val)); //ins
+
+			}
+		}
+		else {
+			if (isDeclaredGlobal(name.value().GetValueString()))
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
+			if (next.value().GetType() != TokenType::EQUAL_SIGN)
+			{
+				addVariableGlobal(name.value(), type);
+				_start.emplace_back(Instruction(Operation::IPUSH, 0)); //ins
+				unreadToken();
+				return {};
+			}
+			// '='
+			else
+			{
+
+
+				int32_t val;
+				auto err = analyseExpression();
+				if (err.has_value())
+					return err;
+				addVariableGlobal(name.value(), type);
+				//_start.emplace_back(Instruction(Operation::IPUSH, val)); //ins
+
+			}
+
+		}
+		//ins
 
 		// <常表达式>
-		int32_t val;
-		auto err = analyseExpression();
-		if (err.has_value())
-			return err;
-		//
-		addVariable(name.value(), type);
-		//_constants_list.emplace_back(Constants(type, val));
-		//_start.emplace_back(Instruction(Operation::LOADC, _constants_list.size() - 1)); //ins
+
 		return {};
 	}
+
 
 
 
@@ -371,7 +408,7 @@ namespace miniplc0 {
 			if (next.value().GetType() != TokenType::EQUAL_SIGN)
 			{
 				addVariable(name.value(), type);
-				_start.emplace_back(Instruction(Operation::IPUSH, 0)); //ins
+				_instructions_list[_instructions_list.size() - 1].emplace_back(Instruction(Operation::IPUSH, 0)); //ins
 				unreadToken();
 				return {};
 			}
@@ -451,6 +488,9 @@ namespace miniplc0 {
 			auto name = nextToken();
 			if (!name.has_value() || name.value().GetType() != TokenType::IDENTIFIER)
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
+			if (name.value().GetValueString() == "main" && type != 3)
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoFunciton);
+
 			if (isDeclaredFun(name.value().GetValueString()) >= 0)
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
 			if (isDeclaredGlobal(name.value().GetValueString()))
@@ -465,7 +505,7 @@ namespace miniplc0 {
 			}
 			else
 			{
-				//_constants_list.emplace_back(Constants(0, name.value().GetValueString()));
+				_constants_list.emplace_back(Constants(0, name.value().GetValueString()));
 				std::vector<Instruction> teminslist;
 				_instructions_list.emplace_back(teminslist);
 				_functions_list.emplace_back(Function(name.value().GetValueString(), type, para, paratype, paraname));
@@ -619,7 +659,7 @@ namespace miniplc0 {
 		{
 			auto s = analyseStatement();
 			if (s.has_value())
-				return {};
+				return s;
 			next = nextToken();
 			if (next.value().GetType() != TokenType::IF &&
 				next.value().GetType() != TokenType::LEFT_QURLY &&
@@ -731,8 +771,8 @@ namespace miniplc0 {
 		{
 			unreadToken();
 			auto error = analyseJumpStatement();
-			if (err.has_value())
-				return err;
+			if (error.has_value())
+				return error;
 			break;
 		}
 		case SEMICOLON:
@@ -887,7 +927,7 @@ namespace miniplc0 {
 				break;
 			case 0:_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::IRET));
 				break;
-			case 3:_instructions_list[_functions_list.size() - 1].emplace_back(Instruction(Operation::RET));
+			case 3:return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrVoid);
 				break;
 			}
 
@@ -1193,13 +1233,13 @@ namespace miniplc0 {
 	std::optional<CompilationError> Analyser::analysePrintable() {
 		auto test = nextToken();
 		if (test.value().GetType() == TokenType::CHAR) {
-			
-			_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::IPUSH,test.value().GetValueString().c_str()[0]);
+
+			_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::IPUSH, test.value().GetValueString().c_str()[0]);
 			_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::CPRINT);
 		}
 		else if (test.value().GetType() == TokenType::STRING) {
 			_constants_list.emplace_back(Constants(0, test.value().GetValueString()));
-			
+
 			_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::LOADC, _constants_list.size() - 1);
 			_instructions_list[_instructions_list.size() - 1].emplace_back(Operation::SPRINT);
 
@@ -1302,6 +1342,11 @@ namespace miniplc0 {
 			}
 			else
 			{
+				if (isDeclaredFun(next.value().GetValueString()) < 0)
+					return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrInvalidInput);
+				else if (_functions_list[isDeclaredFun(next.value().GetValueString())].gettype() == 3)
+					return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoFunciton);
+
 				unreadToken();
 				auto err = analyseFunctionCall();
 
@@ -1337,10 +1382,10 @@ namespace miniplc0 {
 
 		case HEX_INTERGER:
 		{int32_t num;
-			try {
-				std::string  stoc = next.value().GetValueString();
-				num=std::stoi(next.value().GetValueString(), 0, 16);
-				
+		try {
+			std::string  stoc = next.value().GetValueString();
+			num = std::stoi(next.value().GetValueString(), 0, 16);
+
 			//num=stoi(next.value().GetValueString(), 0, 0);//为啥getvalue转不了
 		}
 		catch (std::out_of_range&) {
@@ -1513,7 +1558,6 @@ namespace miniplc0 {
 			break;
 		case miniplc0::LOADC:
 			name = "LOADC";
-			number = 0x09;
 			break;
 		case miniplc0::IPUSH:
 			name = "IPUSH";
