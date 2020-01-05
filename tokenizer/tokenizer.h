@@ -49,10 +49,13 @@ namespace miniplc0 {
 		};
 	public:
 		Tokenizer(std::istream& ifs)
-			: _rdr(ifs), _initialized(false), _ptr(0, 0),_lines_buffer() {}
+			: _rdr(ifs), _initialized(false), _ptr(0, 0), _lines_buffer() {}
 		Tokenizer(Tokenizer&& tkz) = delete;
 		Tokenizer(const Tokenizer&) = delete;
 		Tokenizer& operator=(const Tokenizer&) = delete;
+		int32_t hexToDec(char* source);
+		int32_t getIndexOfSigns(char ch);
+
 
 		// 核心函数，返回下一个 token
 		std::pair<std::optional<Token>, std::optional<CompilationError>> NextToken();

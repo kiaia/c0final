@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
 		.help("output .o.");
 	program.add_argument("-o", "--output")
 		.required()
-		.default_value(std::string("out"))
+		.default_value(std::string("-"))
 		.help("specify the output file.");
 
 	try {
@@ -281,8 +281,19 @@ int main(int argc, char** argv) {
 		}
 		output = &outf;
 	}
-	else
-		output = &std::cout;
+	else {
+		if (program["-c"] == true)outf.open("out", std::ios::binary | std::ios::trunc);
+		else
+		{
+			outf.open("out", std::ios::out | std::ios::trunc);
+		}
+
+		if (!outf) {
+			fmt::print(stderr, "Fail to open {} for writing.\n", "out");
+			exit(2);
+		}
+		output = &outf;
+	}
 	if (program["-s"] == true && program["-c"] == true) {
 		fmt::print(stderr, "You can only perform .c or .s at one time.");
 		exit(2);

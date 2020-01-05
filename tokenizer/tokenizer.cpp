@@ -431,9 +431,48 @@ namespace miniplc0 {
 					return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidInput));
 				}
 				char ch = current_char.value();
-				if ((!miniplc0::isprint(ch)) || ch == '\'' || ch == '\r' || ch == '\\' || ch == '\n')
+				if ((!miniplc0::isprint(ch)))
 					return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidInput));
+
 				char newch = nextChar().value();
+				if (ch == '\\' && newch == 'x')
+				{
+					char  x[3] = "aa";
+					x[0] = nextChar().value();
+					x[1] = nextChar().value();
+					if (!isxdigit(x[0]) || !isxdigit(x[1]))
+						return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidInput));
+
+					int i = hexToDec(x);
+
+					ch = i;
+					newch = nextChar().value();
+				}
+				else if (ch == '\\' && newch == '\\')
+				{
+					ch = '\\';
+					newch = nextChar().value();
+				}
+				else if (ch == '\\' && newch == '\"')
+				{
+					ch = '\"';
+					newch = nextChar().value();
+				}
+				else if (ch == '\\' && newch == 'n')
+				{
+					ch = '\n';
+					newch = nextChar().value();
+				}
+				else if (ch == '\\' && newch == 'r')
+				{
+					ch = '\r';
+					newch = nextChar().value();
+				}
+				else if (ch == '\\' && newch == 't')
+				{
+					ch = '\t';
+					newch = nextChar().value();
+				}
 				if (newch != '\'')
 					return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidInput));
 
@@ -451,14 +490,54 @@ namespace miniplc0 {
 				if (ch == '\"')
 					return std::make_pair(std::make_optional<Token>(TokenType::STRING, ssstring.str(), pos, currentPos()), std::optional<CompilationError>());
 
-				if ((!miniplc0::isprint(ch)) || ch == '\"' || ch == '\r' || ch == '\\' || ch == '\n')
+				if ((!miniplc0::isprint(ch)))
 					return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidInput));
 				else {
+					char newch = nextChar().value();
+					if (ch == '\\' && newch == 'x')
+					{
+						char  x[3] = "aa";
+						x[0] = nextChar().value();
+						x[1] = nextChar().value();
+						if (!isxdigit(x[0]) || !isxdigit(x[1]))
+							return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidInput));
+
+						int i = hexToDec(x);
+
+						ch = i;
+						newch = nextChar().value();
+					}
+					else if (ch == '\\' && newch == '\\')
+					{
+						ch = '\\';
+						newch = nextChar().value();
+					}
+					else if (ch == '\\' && newch == '\'')
+					{
+						ch = '\'';
+						newch = nextChar().value();
+					}
+					else if (ch == '\\' && newch == 'n')
+					{
+						ch = '\n';
+						newch = nextChar().value();
+					}
+					else if (ch == '\\' && newch == 'r')
+					{
+						ch = '\r';
+						newch = nextChar().value();
+					}
+					else if (ch == '\\' && newch == 't')
+					{
+						ch = '\t';
+						newch = nextChar().value();
+					}
 					ssstring << ch;
+					unreadLast();
 					current_state = DFAState::DOUBLE_STATE;
 					break;// 切换到标识符的状态
 				}
-				
+
 			}
 			case MORE_STATE:
 			{
@@ -577,5 +656,39 @@ namespace miniplc0 {
 	// Note: Is it evil to unread a buffer?
 	void Tokenizer::unreadLast() {
 		_ptr = previousPos();
+	}
+	int32_t Tokenizer::hexToDec(char* source)
+	{
+		long sum = 0;
+		long t = 1;
+		int i, len;
+
+		len = strlen(source);
+		for (i = len - 1; i >= 0; i--)
+		{
+			sum += t * getIndexOfSigns(*(source + i));
+			t *= 16;
+		}
+
+		return sum;
+	}
+
+	/* 返回ch字符在sign数组中的序号 */
+	int32_t Tokenizer::getIndexOfSigns(char ch)
+	{
+		if (ch >= '0' && ch <= '9')
+		{
+			return ch - '0';
+		}
+		if (ch >= 'A' && ch <= 'F')
+		{
+			return ch - 'A' + 10;
+		}
+		if (ch >= 'a' && ch <= 'f')
+		{
+			return ch - 'a' + 10;
+		}
+		return -1;
+
 	}
 }
