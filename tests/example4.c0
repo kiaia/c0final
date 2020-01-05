@@ -1,12 +1,14 @@
-int g0 = 42;
-int g1 = 0x42;
+
 
 int fun(int num) {
     return -num;
 }
 
 int main() {
-print(g1);
-print("bbb");
+int i=1;
+const j=2;
+int c;
+print(c);
+print(j);
     return fun(-123456);
 }
